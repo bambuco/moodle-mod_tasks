@@ -92,13 +92,14 @@ if (has_capability('mod/tasks:viewall', $context)) {
     $issuescount = $DB->count_records('tasks_issues', array('tasksid' => $tasks->id));
 
 } else {
-    $sql = 'SELECT * FROM {tasks_issues} WHERE tasksid = :tasksid AND (reportedby = :reportedby OR assignedto = :assignedto)' .
-                ' ORDER BY ' . $sort . ' ' . $dir;
+    $sql = "SELECT * FROM {tasks_issues} WHERE tasksid = :tasksid AND " .
+                " (reportedby = :reportedby OR assignedto = :assignedto OR supervisor = :supervisor)" .
+                " ORDER BY " . $sort . " " . $dir;
 
-    $sqlcount = 'SELECT COUNT(1) FROM {tasks_issues} ' .
-                    ' WHERE tasksid = :tasksid AND (reportedby = :reportedby OR assignedto = :assignedto)';
+    $sqlcount = "SELECT COUNT(1) FROM {tasks_issues} WHERE tasksid = :tasksid AND " .
+                    " (reportedby = :reportedby OR assignedto = :assignedto OR supervisor = :supervisor)";
 
-    $params = array('tasksid' => $tasks->id, 'reportedby' => $USER->id, 'assignedto' => $USER->id);
+    $params = array('tasksid' => $tasks->id, 'reportedby' => $USER->id, 'assignedto' => $USER->id, 'supervisor' => $USER->id);
 
     $issues = $DB->get_records_sql($sql, $params, $perpage * $page, $perpage);
     $issuescount = $DB->count_records_sql($sqlcount, $params);
@@ -112,6 +113,7 @@ $table->cellspacing = 0;
 $table->head = array();
 
 $columns = array();
+$columns['id'] = get_string('issuecode', 'mod_tasks');
 $columns['state'] = get_string('state', 'mod_tasks');
 $columns['name'] = get_string('name');
 $columns['reportedby'] = get_string('reportedby', 'mod_tasks');
@@ -145,6 +147,7 @@ if($issues) {
         $issue = new \mod_tasks\issue($issuedata, $tasks, $cm, $course);
 
         $data = array ();
+        $data[] = $issue->codestr();
         $data[] = $issue->statestr();
         $data[] = $issue->namelink();
         $data[] = $issue->reportedbystr();

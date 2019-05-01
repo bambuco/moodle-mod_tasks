@@ -62,8 +62,14 @@ require_capability('mod/tasks:report', $context);
 // Initialize $PAGE, compute blocks.
 $params = array('tasksid' => $tasksid);
 
+// It is the edition operation.
 if ($id) {
     $params['id'] = $id;
+
+    if (!has_capability('mod/tasks:manageall', $context) &&
+            ($issue->state != TASKS_STATE_OPEN || $issue->reportedby != $USER->id)) {
+        print_error('noteditcapability', 'tasks');
+    }
 }
 
 $PAGE->set_url('/mod/tasks/edit.php', $params);
@@ -72,7 +78,8 @@ require_once ('classes/edit.php');
 
 // First create the form.
 $data = clone $issue;
-$editform = new \mod_tasks\edit_form(NULL, array('data' => $data, 'anonymous' => false));
+$editform = new \mod_tasks\edit_form(NULL,
+                    array('data' => $data, 'anonymous' => false, 'mode' => $tasks->mode, 'context' => $context));
 
 if ($editform->is_cancelled()) {
     if ($id) {
@@ -125,6 +132,25 @@ else if ($data = $editform->get_data()) {
     }
 
     $issue->name = $data->name;
+
+    if (property_exists($data, 'timestart')) {
+        $issue->timestart = $data->timestart;
+    }
+
+    if (property_exists($data, 'timefinish')) {
+        $issue->timefinish = $data->timefinish;
+    }
+
+    if (property_exists($data, 'assignedto')) {
+        $issue->assignedto = $data->assignedto;
+        if ($issue->state != TASKS_STATE_ASSIGNED && !empty($issue->assignedto)) {
+            $issue->state = TASKS_STATE_ASSIGNED;
+        }
+    }
+
+    if (property_exists($data, 'supervisor')) {
+        $issue->supervisor = $data->supervisor;
+    }
 
     if (is_array($data->description)) {
         $issue->description = $data->description['text'];

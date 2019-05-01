@@ -106,6 +106,13 @@ $string['issuetitle'] = 'Title';
 $string['reportagain'] = 'Report other';
 $string['security_question'] = 'Security question';
 $string['incorrectpleasetryagain'] = 'Incorrect. Please try again.';
+$string['supervisor'] = 'Supervisor';
+$string['supervisedmsg'] = 'Supervisor assigned success';
+$string['supervisedview'] = '{$a->user} changed the supervisor on {$a->timelog}: {$a->old} &rArr; {$a->change}';
+$string['noteditcapability'] = 'You can\'t edit this record';
+$string['finishbeforestart'] = 'Start time can\'t be after to finish time';
+$string['notsupervised'] = 'Not supervised';
+$string[''] = '';
 $string[''] = '';
 $string[''] = '';
 

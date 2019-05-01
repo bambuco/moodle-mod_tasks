@@ -92,7 +92,7 @@ class issue {
 
         // Issue code.
         $label = \html_writer::tag('strong', get_string('issuecode', 'mod_tasks'));
-        $html .= \html_writer::tag('div', $label . ' ' . $this->tasks->taskprefix . $this->data->id);
+        $html .= \html_writer::tag('div', $label . ' ' . $this->codestr());
 
         // Name and description
         $html .= \html_writer::tag('h2', $this->data->name);
@@ -113,6 +113,10 @@ class issue {
         // Assigned to.
         $label = \html_writer::tag('strong', get_string('assignedto', 'mod_tasks'));
         $html .= \html_writer::tag('li', $label . ' ' . $this->assignedtostr());
+
+        // Supervisor.
+        $label = \html_writer::tag('strong', get_string('supervisor', 'mod_tasks'));
+        $html .= \html_writer::tag('li', $label . ' ' . $this->supervisorstr());
 
         // Time reported.
         $label = \html_writer::tag('strong', get_string('timereported', 'mod_tasks'));
@@ -138,6 +142,10 @@ class issue {
         echo $html;
     }
 
+    public function codestr() {
+        return $this->tasks->taskprefix . $this->data->id;
+    }
+
     public function statestr() {
         return get_string('state_' . $this->data->state, 'mod_tasks');
     }
@@ -161,13 +169,17 @@ class issue {
         return $reportedbyname;
     }
 
-    public function assignedtostr($link = true) {
+    public function assignedtostr($link = true, $userid = NULL) {
         global $DB;
 
-        if ($this->data->assignedto == 0) {
+        if ($userid === NULL) {
+            $userid = $this->data->assignedto;
+        }
+
+        if ($userid == 0) {
             $assignedtoname = get_string('unassigned', 'mod_tasks');
         } else {
-            $assignedto = $DB->get_record('user', array('id' => $this->data->assignedto));
+            $assignedto = $DB->get_record('user', array('id' => $userid));
 
             if ($link) {
                 $assignedtoname = \html_writer::tag('a', fullname($assignedto),
@@ -178,6 +190,29 @@ class issue {
         }
 
         return $assignedtoname;
+    }
+
+    public function supervisorstr($link = true, $userid = NULL) {
+        global $DB;
+
+        if ($userid === NULL) {
+            $userid = $this->data->supervisor;
+        }
+
+        if ($userid == 0) {
+            $supervisorname = get_string('notsupervised', 'mod_tasks');
+        } else {
+            $supervisor = $DB->get_record('user', array('id' => $userid));
+
+            if ($link) {
+                $supervisorname = \html_writer::tag('a', fullname($supervisor),
+                                    array('href' => new \moodle_url('/user/profile.php', array('id' => $supervisor->id))));
+            } else {
+                $supervisorname = fullname($supervisor);
+            }
+        }
+
+        return $supervisorname;
     }
 
     public function timereportedstr($userformatdate = null) {
@@ -249,6 +284,9 @@ class issue {
                     case TASKS_LOG_ASSIGN:
                         $html .= $this->getassignview($log);
                         break;
+                    case TASKS_LOG_SUPERVISED:
+                        $html .= $this->getsupervisedview($log);
+                        break;
                     case TASKS_LOG_STATE:
                         $html .= $this->getstateview($log);
                         break;
@@ -304,6 +342,14 @@ class issue {
                 $data[] = format_text($summary->change->$key,
                     isset($summary->change->descriptionformat) ?
                         $summary->change->descriptionformat : $this->data->descriptionformat);
+
+            } else if (in_array($key, array('timestart', 'timereported', 'timefinish'))) {
+                $data[] = $field == 0 ? '' : userdate($field, $this->defaultuserformatdate);
+                $data[] = $summary->change->$key == 0 ? '' : userdate($summary->change->$key, $this->defaultuserformatdate);
+
+            } else if ($key == 'assignedto') {
+                $data[] = $field == 0 ? '' : $this->assignedtostr(true, $field);
+                $data[] = $summary->change->$key == 0 ? '' : $this->assignedtostr(true, $summary->change->$key);
             } else {
                 $data[] = $field;
                 $data[] = $summary->change->$key;
@@ -346,6 +392,34 @@ class issue {
                                     array('href' => new \moodle_url('/user/profile.php', array('id' => $usrchange->id))));
 
         return \html_writer::tag('span', get_string('assignview', 'mod_tasks', $a) );
+    }
+
+    public function getsupervisedview($log) {
+        global $DB;
+
+        $html = '';
+
+        $user = $DB->get_record('user', array('id' => $log->userid));
+        $summary = json_decode($log->summary);
+
+        $a = new \stdClass();
+        $a->timelog = userdate($log->timelog, $this->defaultuserformatdate);
+        $a->user = \html_writer::tag('a', fullname($user),
+                                    array('href' => new \moodle_url('/user/profile.php', array('id' => $user->id))));
+
+        if ($summary->old > 0) {
+            $usrold = $DB->get_record('user', array('id' => $summary->old));
+            $a->old = \html_writer::tag('a', fullname($usrold),
+                        array('href' => new \moodle_url('/user/profile.php', array('id' => $usrold->id))));
+        } else {
+            $a->old = '';
+        }
+
+        $usrchange = $DB->get_record('user', array('id' => $summary->change));
+        $a->change = \html_writer::tag('a', fullname($usrchange),
+                                    array('href' => new \moodle_url('/user/profile.php', array('id' => $usrchange->id))));
+
+        return \html_writer::tag('span', get_string('supervisedview', 'mod_tasks', $a) );
     }
 
     public function getstateview($log) {

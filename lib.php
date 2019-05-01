@@ -66,6 +66,7 @@ define('TASKS_STATE_CANCELED', 'canceled');
  */
 define('TASKS_LOG_EDIT', 'edit');
 define('TASKS_LOG_ASSIGN', 'assigned');
+define('TASKS_LOG_SUPERVISED', 'supervised');
 define('TASKS_LOG_STATE', 'state');
 define('TASKS_LOG_COMMENT', 'comment');
 /**#@-*/

@@ -767,6 +767,7 @@ button.tasks-list-group-item-danger.active:focus {
 }
 
 #page-mod-tasks-detail .one-log.type-assigned,
+#page-mod-tasks-detail .one-log.type-supervised,
 #page-mod-tasks-detail .one-log.type-state {
     margin-left: 20px;
     padding: 10px 10px 10px 20px;
@@ -780,6 +781,15 @@ button.tasks-list-group-item-danger.active:focus {
     left: -20px;
     top: 30%;
     font-size: 30px;
+    color: #ddd;
+}
+
+#page-mod-tasks-detail .one-log.type-supervised:before {
+    content: "🚧";
+    position: absolute;
+    left: -15px;
+    top: 30%;
+    font-size: 25px;
     color: #ddd;
 }
 

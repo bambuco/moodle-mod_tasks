@@ -69,6 +69,19 @@ if ($issue->state == TASKS_STATE_OPEN || $issue->state == TASKS_STATE_ASSIGNED) 
     }
 }
 
+// Assign supervisor user.
+if ($issue->state != TASKS_STATE_CLOSED && $issue->state != TASKS_STATE_CANCELED) {
+    if (has_capability('mod/tasks:manageall', $context)) {
+        $data = new stdClass();
+        $data->context = $context;
+        $data->id = $id;
+        $data->supervisor = $issue->supervisor;
+
+        require_once ('classes/supervisor.php');
+        $supervisorform = new \mod_tasks\supervisor_form('persist.php', array('data' => $data));
+    }
+}
+
 // Comment form.
 if ($issue->state != TASKS_STATE_CLOSED && $issue->state != TASKS_STATE_CANCELED) {
     if (has_capability('mod/tasks:manageall', $context) ||
@@ -83,10 +96,11 @@ if ($issue->state != TASKS_STATE_CLOSED && $issue->state != TASKS_STATE_CANCELED
 }
 
 // Change state form.
-if ($issue->state != TASKS_STATE_CLOSED) {
+if ($issue->state != TASKS_STATE_CLOSED && $issue->state != TASKS_STATE_CANCELED) {
     if (has_capability('mod/tasks:manageall', $context) ||
             ($issue->assignedto == $USER->id && $issue->state == TASKS_STATE_ASSIGNED) ||
-            $issue->reportedby == $USER->id) {
+            $issue->reportedby == $USER->id ||
+            ($issue->supervisor == $USER->id && $issue->state == TASKS_STATE_RESOLVED)) {
 
         $data = new stdClass();
         $data->context = $context;
@@ -120,14 +134,15 @@ if (!empty($msgkey)) {
     echo $OUTPUT->notification(get_string($msgkey, 'mod_tasks'), 'notifysuccess');
 }
 
-if (has_capability('mod/tasks:viewall', $context) || $issue->reportedby == $USER->id || $issue->assignedto == $USER->id) {
+if (has_capability('mod/tasks:viewall', $context) || $issue->reportedby == $USER->id ||
+        $issue->assignedto == $USER->id || $issue->supervisor == $USER->id) {
 
     $current->printdetails();
 
     echo $OUTPUT->container_start('buttons');
 
-    if ($issue->state == TASKS_STATE_OPEN &&
-            (has_capability('mod/tasks:manageall', $context) || $issue->reportedby == $USER->id)) {
+    if (($issue->state == TASKS_STATE_OPEN && $issue->reportedby == $USER->id) ||
+            has_capability('mod/tasks:manageall', $context)) {
         echo $OUTPUT->single_button(new moodle_url($CFG->wwwroot . '/mod/tasks/edit.php',
                                         array('id' => $id)), get_string('edit'), 'get');
     }
@@ -149,6 +164,12 @@ if (has_capability('mod/tasks:viewall', $context) || $issue->reportedby == $USER
     if ($assignform) {
         echo $OUTPUT->box_start('one-action');
         $assignform->display();
+        echo $OUTPUT->box_end();
+    }
+
+    if ($assignform) {
+        echo $OUTPUT->box_start('one-action');
+        $supervisorform->display();
         echo $OUTPUT->box_end();
     }
 

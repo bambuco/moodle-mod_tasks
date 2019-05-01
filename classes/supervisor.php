@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Class to manage the change state operation
+ * Class to manage the supervisor assign operation
  *
  * @package mod_tasks
  * @copyright  2019 David Herney - cirano
@@ -26,40 +26,29 @@ namespace mod_tasks;
 
 require_once($CFG->dirroot . '/mod/tasks/locallib.php');
 
-class state_form extends \moodleform {
+class supervisor_form extends \moodleform {
     protected $_data;
 
     /**
      * Form definition.
      */
     function definition() {
-        global $USER;
+        global $CFG, $PAGE, $DB;
 
         $mform = $this->_form;
 
         // this contains the data of this form
         $this->_data = $this->_customdata['data'];
-        $issue = $this->_data->issue;
-        $this->_data->action = 'state';
+        $this->_data->action = 'supervisor';
+
+        $users = get_enrolled_users($this->_data->context);
 
         $options = array();
-        $states = array();
-
-        if (has_capability('mod/tasks:manageall', $this->_data->context)) {
-            $states = array(TASKS_STATE_RESOLVED, TASKS_STATE_CLOSED, TASKS_STATE_CANCELED);
-        } else if ($issue->assignedto == $USER->id && $issue->state == TASKS_STATE_ASSIGNED) {
-            $states = array(TASKS_STATE_RESOLVED);
-        } else if ($issue->supervisor == $USER->id && $issue->state == TASKS_STATE_RESOLVED) {
-            $states = array(TASKS_STATE_CLOSED);
-        } else if ($issue->reportedby == $USER->id) {
-            $states = array(TASKS_STATE_CANCELED);
+        foreach($users as $user) {
+            $options[$user->id] = fullname($user) . ' (' . $user->username . ')';
         }
 
-        foreach ($states as $state) {
-            $options[$state] = get_string('state_' . $state, 'mod_tasks');
-        }
-
-        $mform->addElement('select', 'state', get_string('state', 'mod_tasks'), $options);
+        $mform->addElement('select', 'supervisor', get_string('supervisor', 'mod_tasks'), $options);
 
         $mform->addElement('hidden', 'id', null);
         $mform->setType('id', PARAM_INT);
@@ -67,7 +56,7 @@ class state_form extends \moodleform {
         $mform->addElement('hidden', 'action', null);
         $mform->setType('action', PARAM_TEXT);
 
-        $this->add_action_buttons(false, get_string('change', 'mod_tasks'));
+        $this->add_action_buttons(false, get_string('assign', 'mod_tasks'));
 
         // Finally set the current form data
         $this->set_data($this->_data);

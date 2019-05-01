@@ -47,6 +47,7 @@ $context = context_module::instance($cm->id);
 $assignform = null;
 $commentform = null;
 $stateform = null;
+$supervisorform = null;
 $msgkey = '';
 
 $current = new \mod_tasks\issue($issue, $tasks, $cm, $course);
@@ -70,9 +71,25 @@ if ($issue->state == TASKS_STATE_OPEN || $issue->state == TASKS_STATE_ASSIGNED) 
     }
 }
 
+// Assign supervisor user.
+if ($issue->state != TASKS_STATE_CLOSED && $issue->state != TASKS_STATE_CANCELED) {
+    if (has_capability('mod/tasks:manageall', $context)) {
+        $data = new stdClass();
+        $data->context = $context;
+        $data->id = $id;
+        $data->supervisor = $issue->supervisor;
+
+        require_once ('classes/supervisor.php');
+        $supervisorform = new \mod_tasks\supervisor_form('persist.php', array('data' => $data));
+    }
+}
+
 // Change state form.
-if ($issue->state != TASKS_STATE_CLOSED) {
-    if (has_capability('mod/tasks:manageall', $context) || $issue->assignedto == $USER->id || $issue->reportedby == $USER->id) {
+if ($issue->state != TASKS_STATE_CLOSED && $issue->state != TASKS_STATE_CANCELED) {
+    if (has_capability('mod/tasks:manageall', $context) ||
+            ($issue->assignedto == $USER->id && $issue->state == TASKS_STATE_ASSIGNED) ||
+            $issue->reportedby == $USER->id ||
+            ($issue->supervisor == $USER->id && $issue->state == TASKS_STATE_RESOLVED)) {
 
         $data = new stdClass();
         $data->context = $context;
@@ -123,9 +140,29 @@ if ($assignform && $data = $assignform->get_data()) {
     $event->trigger();
 
     $msgkey = 'assignedmsg';
-}
+} else if ($supervisorform && $data = $supervisorform->get_data()) {
 
-if ($stateform && $data = $stateform->get_data()) {
+    $log = new stdClass();
+    $log->old = $issue->supervisor;
+    $log->change = $data->supervisor;
+
+    $issue->supervisor = $data->supervisor;
+
+    $DB->update_record('tasks_issues', $issue);
+
+    // A specific tasks transaction log.
+    $current->log(TASKS_LOG_SUPERVISED, json_encode($log));
+
+    require_once 'classes/event/issue_updated.php';
+    $event = \mod_tasks\event\issue_updated::create(array(
+        'objectid' => $issue->id,
+        'context' => $PAGE->context,
+        'other' => array('tasksid' => $tasks->id)
+    ));
+    $event->trigger();
+
+    $msgkey = 'supervisedmsg';
+} else if ($stateform && $data = $stateform->get_data()) {
 
     $log = new stdClass();
     $log->old = $issue->state;

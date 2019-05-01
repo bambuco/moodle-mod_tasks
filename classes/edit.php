@@ -41,6 +41,8 @@ class edit_form extends \moodleform {
         // This contains the data of this form.
         $this->_data = $this->_customdata['data'];
         $this->anonymous = $this->_customdata['anonymous'];
+        $this->mode = isset($this->_customdata['mode']) ? $this->_customdata['mode'] : TASKS_MODE_ISSUES;
+        $this->context = isset($this->_customdata['context']) ? $this->_customdata['context'] : NULL;
 
         if (isset($this->_data->id)) {
             $this->_data->description = array('text'=>$this->_data->description, 'format'=>$this->_data->descriptionformat);
@@ -48,7 +50,7 @@ class edit_form extends \moodleform {
             $this->_data->state = TASKS_STATE_OPEN;
         }
 
-//        $dateattributes = array('stopyear'=>date('Y', time()) + 15, 'startyear'=>date('Y', time()) - 5);
+        $dateattributes = array('stopyear'=>date('Y', time()) + 5, 'startyear'=>date('Y', time()), 'optional'=>true);
         $editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES, 'maxbytes'=>$CFG->maxbytes, 'trusttext'=>false, 'noclean'=>true);
 
         if ($this->anonymous) {
@@ -69,6 +71,30 @@ class edit_form extends \moodleform {
 
         if ($this->anonymous && !empty($CFG->recaptchapublickey)) {
             $mform->addElement('recaptcha', 'recaptcha_element', get_string('security_question', 'mod_tasks'));
+        }
+
+        if ($this->mode == TASKS_MODE_WORK && $this->context) {
+
+            // Assigned user.
+            $users = get_enrolled_users($this->context);
+            $options = array();
+            $options[0] = '';
+            foreach($users as $user) {
+                $options[$user->id] = fullname($user) . ' (' . $user->username . ')';
+            }
+            $mform->addElement('select', 'assignedto', get_string('assignto', 'mod_tasks'), $options);
+
+            if (has_capability('mod/tasks:manageall', $this->context)) {
+                $mform->addElement('select', 'supervisor', get_string('supervisor', 'mod_tasks'), $options);
+            }
+
+            // Initial date.
+            $mform->addElement('date_time_selector', 'timestart', get_string('timestart', 'mod_tasks'), $dateattributes);
+            $mform->setDefault('timestart', time());
+
+            // Expected finish date.
+            $mform->addElement('date_time_selector', 'timefinish', get_string('timefinish', 'mod_tasks'), $dateattributes);
+            $mform->setDefault('timefinish', time() + 3600 * 24 * 8);
         }
 
         $mform->addElement('hidden', 'id', null);
@@ -104,6 +130,30 @@ class edit_form extends \moodleform {
                 }
             } else {
                 $errors['recaptcha_element'] = get_string('missingrecaptchachallengefield');
+            }
+        }
+
+        if ($this->mode == TASKS_MODE_WORK && $this->context) {
+            $timestart = $this->_form->getElement('timestart');
+            if ($timestart) {
+                $elementval = $timestart->getValue();
+                $startval = $timestart->exportValue($elementval);
+                $startval = is_array($startval) ? $startval['timestart'] : 0;
+            } else {
+                $startval = 0;
+            }
+
+            $timefinish = $this->_form->getElement('timefinish');
+            if ($timefinish) {
+                $elementval = $timefinish->getValue();
+                $finishval = $timefinish->exportValue($elementval);
+                $finishval = is_array($finishval) ? $finishval['timefinish'] : 0;
+            } else {
+                $finishval = 0;
+            }
+
+            if (!empty($startval) && !empty($finishval) && $finishval < $startval) {
+                $errors['timefinish'] = get_string('finishbeforestart', 'mod_tasks');
             }
         }
 
