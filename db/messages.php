@@ -1,4 +1,5 @@
 <?php
+
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,15 +16,39 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Page module version information
+ * Defines message providers (types of messages being sent)
  *
  * @package mod_tasks
  * @copyright  2019 David Herney - cirano
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+$messageproviders = array (
 
-$plugin->version   = 2019040502;       // The current module version (Date: YYYYMMDDXX)
-$plugin->requires  = 2015111000;    // Requires this Moodle version
-$plugin->component = 'mod_tasks';       // Full name of the plugin (used for diagnostics)
+    'created' => array (
+    ),
+
+    'edited' => array (
+    ),
+
+    'reminder' => array (
+    ),
+
+    'resolved' => array (
+    ),
+
+    'closed' => array (
+    ),
+
+    'canceled' => array (
+    ),
+
+    'assigned' => array (
+    ),
+
+    'supervised' => array (
+    ),
+);
+
+
+

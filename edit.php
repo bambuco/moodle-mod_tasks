@@ -23,9 +23,10 @@
  */
 
 /// This page prints a particular instance of tasks
-require_once("../../config.php");
-require_once("lib.php");
+require_once('../../config.php');
+require_once('lib.php');
 require_once($CFG->libdir . '/completionlib.php');
+require_once($CFG->libdir . '/messagelib.php');
 
 $tasksid = optional_param('tasksid', 0, PARAM_INT);
 $id = optional_param('id', 0, PARAM_INT); // Issue ID.
@@ -95,6 +96,8 @@ else if ($data = $editform->get_data()) {
     $log->old = new stdClass();
     $log->change = new stdClass();
     $anychange = false;
+    $assigned = false;
+    $supervised = false;
 
     if (!$id) {
         $issue = new stdClass();
@@ -142,13 +145,16 @@ else if ($data = $editform->get_data()) {
     }
 
     if (property_exists($data, 'assignedto')) {
+        $assigned = $issue->assignedto != $data->assignedto;
         $issue->assignedto = $data->assignedto;
+
         if ($issue->state != TASKS_STATE_ASSIGNED && !empty($issue->assignedto)) {
             $issue->state = TASKS_STATE_ASSIGNED;
         }
     }
 
     if (property_exists($data, 'supervisor')) {
+        $supervised = $issue->supervisor != $data->supervisor;
         $issue->supervisor = $data->supervisor;
     }
 
@@ -161,9 +167,10 @@ else if ($data = $editform->get_data()) {
 
         $DB->update_record('tasks_issues', $issue);
 
+        $issueobj = new \mod_tasks\issue($issue, $tasks, $cm, $course);
+
         // A specific tasks transaction log.
         if ($anychange) {
-            $issueobj = new \mod_tasks\issue($issue, $tasks, $cm, $course);
             $issueobj->log(TASKS_LOG_EDIT, json_encode($log));
         }
 
@@ -174,9 +181,15 @@ else if ($data = $editform->get_data()) {
             'other' => array('tasksid' => $tasks->id)
         ));
         $event->trigger();
+
+        if ($anychange) {
+            $issueobj->sendmessage(TASKS_MSG_EDITED);
+        }
+
     }
     else {
         $id = $DB->insert_record('tasks_issues', $issue, true);
+        $issue->id = $id;
 
         require_once 'classes/event/issue_created.php';
         $event = \mod_tasks\event\issue_created::create(array(
@@ -185,6 +198,18 @@ else if ($data = $editform->get_data()) {
             'other' => array('tasksid' => $tasks->id),
         ));
         $event->trigger();
+
+        $issueobj = new \mod_tasks\issue($issue, $tasks, $cm, $course);
+        $issueobj->sendmessage(TASKS_MSG_CREATED);
+
+    }
+
+    if ($assigned) {
+        $issueobj->sendmessage(TASKS_MSG_ASSIGNED);
+    }
+
+    if ($supervised) {
+        $issueobj->sendmessage(TASKS_MSG_SUPERVISED);
     }
 
     $url = new moodle_url($CFG->wwwroot.'/mod/tasks/detail.php', array('id' => $id));

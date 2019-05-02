@@ -91,7 +91,7 @@ if ($issue->state != TASKS_STATE_CLOSED && $issue->state != TASKS_STATE_CANCELED
         $data->id = $id;
 
         require_once ('classes/comment.php');
-        $commentform = new \mod_tasks\comment_form(NULL, array('data' => $data));
+        $commentform = new \mod_tasks\comment_form('persist.php', array('data' => $data));
     }
 }
 
@@ -110,16 +110,6 @@ if ($issue->state != TASKS_STATE_CLOSED && $issue->state != TASKS_STATE_CANCELED
         require_once ('classes/state.php');
         $stateform = new \mod_tasks\state_form('persist.php', array('data' => $data));
     }
-}
-
-// Process comment form.
-if ($commentform && $data = $commentform->get_data()) {
-
-    $log = new stdClass();
-    $log->comment = $data->comment;
-    $current->log(TASKS_LOG_COMMENT, json_encode($log));
-
-    $msgkey = 'commentedmsg';
 }
 
 // Initialize $PAGE, compute blocks.

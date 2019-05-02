@@ -14,6 +14,13 @@ ABOUT
 Developed by: David Herney - david.bernal at bambuco dot co
 GIT: https://github.com/bambuco/moodle-mod_tasks
 
+POWERED BY
+==============
+BambuCo - https://bambuco.co/
+Conhydra - https://www.conhydra.com/
+Engagement - http://engagement.com.co/
+
+
 IN VERSION
 =============
 2019040500:

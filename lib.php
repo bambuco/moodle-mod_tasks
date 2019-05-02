@@ -71,6 +71,19 @@ define('TASKS_LOG_STATE', 'state');
 define('TASKS_LOG_COMMENT', 'comment');
 /**#@-*/
 
+/**#@+
+ * Tasks log types
+ */
+define('TASKS_MSG_CREATED', 'created');
+define('TASKS_MSG_EDITED', 'edited');
+define('TASKS_MSG_REMINDER', 'reminder');
+define('TASKS_MSG_RESOLVED', 'resolved');
+define('TASKS_MSG_CLOSED', 'closed');
+define('TASKS_MSG_CANCELED', 'canceled');
+define('TASKS_MSG_ASSIGNED', 'assigned');
+define('TASKS_MSG_SUPERVISED', 'supervised');
+/**#@-*/
+
 /**
  * Add tasks instance.
  * @param stdClass $data

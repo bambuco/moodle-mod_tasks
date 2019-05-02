@@ -43,6 +43,7 @@ class comment_form extends \moodleform {
 
         $mform->addElement('textarea', 'comment', get_string('comment', 'mod_tasks'), array('cols' => 50, 'rows' => 5));
         $mform->setType('comment', PARAM_TEXT);
+        $mform->addRule('comment', get_string('missingvalue', 'mod_tasks'), 'required', null, 'client');
 
         $mform->addElement('hidden', 'id', null);
         $mform->setType('id', PARAM_INT);

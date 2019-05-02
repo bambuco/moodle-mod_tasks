@@ -68,11 +68,13 @@ class dashboard {
      * @return string
      */
     public function printboard($return = false) {
-        global $CFG, $USER, $DB, $PAGE;
+        global $OUTPUT;
 
         $html = '';
 
         $context = \context_module::instance($this->cm->id);
+
+        $html .= $OUTPUT->box_start('span12 panels');
 
         if (has_capability('mod/tasks:viewall', $context)) {
             $html .= $this->get_latestissues_panel()->get_content();
@@ -88,6 +90,16 @@ class dashboard {
 
         if (has_capability('mod/tasks:manage', $context)) {
             $html .= $this->get_openedissues_panel()->get_content();
+        }
+
+        $html .= $OUTPUT->box_end();
+
+        if ($this->tasks->anonymous == TASKS_ANONYMOUS) {
+
+            $html .= $OUTPUT->box_start('span12');
+            $html .= \html_writer::tag('a', get_string('anonymouslinktext', 'mod_tasks'),
+                        array('href' => new \moodle_url('/mod/tasks/report.php', array('tasksid' => $this->tasks->id))));
+            $html .= $OUTPUT->box_end();
         }
 
         if ($return) {

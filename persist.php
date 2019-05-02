@@ -101,6 +101,19 @@ if ($issue->state != TASKS_STATE_CLOSED && $issue->state != TASKS_STATE_CANCELED
     }
 }
 
+// Comment form.
+if ($issue->state != TASKS_STATE_CLOSED && $issue->state != TASKS_STATE_CANCELED) {
+    if (has_capability('mod/tasks:manageall', $context) ||
+            $issue->assignedto == $USER->id ||
+            $issue->reportedby == $USER->id) {
+        $data = new stdClass();
+        $data->id = $id;
+
+        require_once ('classes/comment.php');
+        $commentform = new \mod_tasks\comment_form('persist.php', array('data' => $data));
+    }
+}
+
 if ($assignform && $data = $assignform->get_data()) {
 
     $log = new stdClass();
@@ -116,6 +129,7 @@ if ($assignform && $data = $assignform->get_data()) {
         $issue->state = TASKS_STATE_ASSIGNED;
     }
 
+    $assigned = $issue->assignedto != $data->assignedto;
     $issue->assignedto = $data->assignedto;
 
     if (!$issue->timestart) {
@@ -139,6 +153,10 @@ if ($assignform && $data = $assignform->get_data()) {
     ));
     $event->trigger();
 
+    if ($assigned) {
+        $current->sendmessage(TASKS_MSG_ASSIGNED);
+    }
+
     $msgkey = 'assignedmsg';
 } else if ($supervisorform && $data = $supervisorform->get_data()) {
 
@@ -146,6 +164,7 @@ if ($assignform && $data = $assignform->get_data()) {
     $log->old = $issue->supervisor;
     $log->change = $data->supervisor;
 
+    $supervised = $issue->supervisor != $data->supervisor;
     $issue->supervisor = $data->supervisor;
 
     $DB->update_record('tasks_issues', $issue);
@@ -161,6 +180,10 @@ if ($assignform && $data = $assignform->get_data()) {
     ));
     $event->trigger();
 
+    if ($supervised) {
+        $current->sendmessage(TASKS_MSG_SUPERVISED);
+    }
+
     $msgkey = 'supervisedmsg';
 } else if ($stateform && $data = $stateform->get_data()) {
 
@@ -168,6 +191,7 @@ if ($assignform && $data = $assignform->get_data()) {
     $log->old = $issue->state;
     $log->change = $data->state;
 
+    $statechange = $issue->state != $data->state;
     $issue->state = $data->state;
 
     if (!$issue->timefinish &&
@@ -189,8 +213,32 @@ if ($assignform && $data = $assignform->get_data()) {
     ));
     $event->trigger();
 
+    if ($statechange) {
+        switch ($issue->state) {
+            case TASKS_STATE_RESOLVED:
+                $current->sendmessage(TASKS_MSG_RESOLVED);
+            break;
+            case TASKS_STATE_CLOSED:
+                $current->sendmessage(TASKS_MSG_CLOSED);
+            break;
+            case TASKS_STATE_CANCELED:
+                $current->sendmessage(TASKS_MSG_CANCELED);
+            break;
+        }
+    }
+
     $msgkey = 'statechangedmsg';
+} else if ($commentform && $data = $commentform->get_data()) {
+
+    $log = new stdClass();
+    $log->comment = $data->comment;
+    $current->log(TASKS_LOG_COMMENT, json_encode($log));
+
+    $current->sendmessage(TASKS_MSG_EDITED);
+
+    $msgkey = 'commentedmsg';
 }
+
 
 // Redirect to the course main page.
 $url = new moodle_url('/mod/tasks/detail.php', array('id' => $id, 'msg' => $msgkey));

@@ -462,4 +462,90 @@ class issue {
 
         return $panel->get_content();
     }
+
+    public function sendmessage($type) {
+        global $USER;
+
+        $to = array();
+        $onlymail = array();
+
+        $a = new \stdClass();
+        $a->label = $this->tasks->singularlabel;
+        $a->code = $this->codestr();
+        $a->url = $this->namelink();
+
+        $msg = get_string('msg_' . $type, 'mod_tasks', $a);
+        $subject = get_string('subject_' . $type, 'mod_tasks', $a);
+
+        switch ($type) {
+            case TASKS_MSG_CREATED:
+                if ($this->data->reportedby > 0) {
+                    $to[] = $this->data->reportedby;
+                } else if (!empty($issue->emailreportedby)) {
+                    $tmpuser = new \stdClass();
+                    $tmpuser->id = 0;
+                    $tmpuser->emailstop = $issue->emailreportedby;
+                    $to[] = $tmpuser;
+                }
+
+            break;
+            case TASKS_MSG_REMINDER:
+                $to[] = $this->data->assignedto;
+            break;
+            case TASKS_MSG_EDITED:
+            case TASKS_MSG_CLOSED:
+            case TASKS_MSG_CANCELED;
+
+                if ($this->data->reportedby > 0) {
+                    $to[] = $this->data->reportedby;
+                } else if (!empty($issue->emailreportedby)) {
+                    $tmpuser = new \stdClass();
+                    $tmpuser->id = 0;
+                    $tmpuser->emailstop = $issue->emailreportedby;
+                    $to[] = $tmpuser;
+                }
+
+                if ($this->data->assignedto) {
+                    $to[] = $this->data->assignedto;
+                }
+
+                if ($this->data->supervisor) {
+                    $to[] = $this->data->supervisor;
+                }
+
+            break;
+            case TASKS_MSG_ASSIGNED:
+                $to[] = $this->data->assignedto;
+            break;
+            case TASKS_MSG_SUPERVISED:
+                $to[] = $this->data->supervisor;
+            break;
+            case TASKS_MSG_RESOLVED:
+                $to[] = $this->data->supervisor;
+            break;
+        }
+
+
+        foreach ($to as $user) {
+            $eventdata = new \stdClass();
+            $eventdata->modulename       = 'tasks';
+            $eventdata->userfrom         = $USER;
+            $eventdata->userto           = $user;
+            $eventdata->subject          = $subject;
+            $eventdata->fullmessage      = format_text_email($msg, FORMAT_HTML);
+            $eventdata->fullmessageformat = FORMAT_PLAIN;
+            $eventdata->fullmessagehtml  = $msg;
+            $eventdata->smallmessage     = '';
+            $eventdata->contexturl       = new \moodle_url('/mod/tasks/detail.php', array('id' => $this->data->id));
+            $eventdata->contexturlname   = $this->data->name;
+            $eventdata->courseid         = $this->tasks->course;
+
+            // Required for messaging framework
+            $eventdata->component = 'mod_tasks';
+            $eventdata->name = $type;
+
+            message_send($eventdata);
+        }
+
+    }
 }
