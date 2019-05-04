@@ -490,7 +490,10 @@ class issue {
 
             break;
             case TASKS_MSG_REMINDER:
-                $to[] = $this->data->assignedto;
+            case TASKS_MSG_ASSIGNED:
+                if ($this->data->assignedto) {
+                    $to[] = $this->data->assignedto;
+                }
             break;
             case TASKS_MSG_EDITED:
             case TASKS_MSG_CLOSED:
@@ -514,17 +517,13 @@ class issue {
                 }
 
             break;
-            case TASKS_MSG_ASSIGNED:
-                $to[] = $this->data->assignedto;
-            break;
             case TASKS_MSG_SUPERVISED:
-                $to[] = $this->data->supervisor;
-            break;
             case TASKS_MSG_RESOLVED:
-                $to[] = $this->data->supervisor;
+                if ($this->data->assignedto) {
+                    $to[] = $this->data->supervisor;
+                }
             break;
         }
-
 
         foreach ($to as $user) {
             $eventdata = new \stdClass();

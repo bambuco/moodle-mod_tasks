@@ -40,39 +40,43 @@ class backup_tasks_activity_structure_step extends backup_activity_structure_ste
         // Define each element separated
         $tasks = new backup_nested_element('tasks', array('id'), array(
             'name', 'intro', 'introformat', 'notificationstype', 'notificationsdays',
-            'taskprefix'));
+            'taskprefix', 'anonymous', 'mode', 'singularlabel', 'plurallabel'));
 
         $issues = new backup_nested_element('issues');
 
         $issue = new backup_nested_element('issue', array('id'), array(
-            'reportedby', 'assignedto', 'name', 'description',
-            'descriptionformat', 'timereported', 'timestart', 'timefinish', 'state'));
+            'reportedby', 'assignedto', 'supervisor', 'name', 'description',
+            'descriptionformat', 'timereported', 'timestart', 'timefinish', 'state',
+            'namereportedby', 'emailreportedby'));
 
+        $issueslog = new backup_nested_element('issueslog');
 
-//ToDo: VOY ACA, FALTAN LAS OTRAS TABLAS
-//ToDo: VOY ACA, FALTAN LAS OTRAS TABLAS
-//ToDo: VOY ACA, FALTAN LAS OTRAS TABLAS
-//ToDo: VOY ACA, FALTAN LAS OTRAS TABLAS
-//ToDo: VOY ACA, FALTAN LAS OTRAS TABLAS
-//ToDo: VOY ACA, FALTAN LAS OTRAS TABLAS
-//ToDo: VOY ACA, FALTAN LAS OTRAS TABLAS
-//ToDo: VOY ACA, FALTAN LAS OTRAS TABLAS
-//ToDo: VOY ACA, FALTAN LAS OTRAS TABLAS
-//ToDo: VOY ACA, FALTAN LAS OTRAS TABLAS
-//ToDo: VOY ACA, FALTAN LAS OTRAS TABLAS
-
+        $issuelog = new backup_nested_element('issuelog', array('id'), array(
+            'userid', 'type', 'timelog', 'summary'));
 
         // Build the tree
+        $tasks->add_child($issues);
+        $issues->add_child($issuelog);
 
         // Define sources
         $tasks->set_source_table('tasks', array('id' => backup::VAR_ACTIVITYID));
 
+        // All these source definitions only happen if we are including user info
+        if ($userinfo) {
+            $issue->set_source_table('tasks_issues', array('tasksid' => backup::VAR_ACTIVITYID));
+            $issuelog->set_source_table('tasks_issues_log', array('tasksid' => backup::VAR_ACTIVITYID));
+        }
+
         // Define id annotations
-        // (none)
+        $issue->annotate_ids('user', 'reportedby');
+        $issue->annotate_ids('user', 'assignedto');
+        $issue->annotate_ids('user', 'supervisor');
+
+        $issuelog->annotate_ids('user', 'userid');
 
         // Define file annotations
-        $tasks->annotate_files('mod_tasks', 'intro', null); // This file areas haven't itemid
-        $tasks->annotate_files('mod_tasks', 'content', null); // This file areas haven't itemid
+        $tasks->annotate_files('mod_tasks', 'intro', null); // This file areas haven't itemid.
+        $issue->annotate_files('mod_tasks', 'description', 'id');
 
         // Return the root element (tasks), wrapped into standard activity structure
         return $this->prepare_activity_structure($tasks);

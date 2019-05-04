@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <XMLDB PATH="mod/tasks/db" VERSION="20190405" COMMENT="XMLDB file for Tasks module"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
->
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
   <TABLES>
     <TABLE NAME="tasks" COMMENT="Tasks module instances">
       <FIELDS>
@@ -50,39 +49,6 @@
         <INDEX NAME="tasksid" UNIQUE="false" FIELDS="tasksid"/>
         <INDEX NAME="assignedto" UNIQUE="false" FIELDS="assignedto"/>
         <INDEX NAME="state" UNIQUE="false" FIELDS="state"/>
-      </INDEXES>
-    </TABLE>
-    <TABLE NAME="tasks_issues_comments" COMMENT="Comments to a users task">
-      <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="tasksid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="issueid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="comment" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
-        <FIELD NAME="commentformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-      </KEYS>
-      <INDEXES>
-        <INDEX NAME="tasksid" UNIQUE="false" FIELDS="tasksid"/>
-        <INDEX NAME="issueid" UNIQUE="false" FIELDS="issueid"/>
-      </INDEXES>
-    </TABLE>
-    <TABLE NAME="tasks_issues_followers" COMMENT="">
-      <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="tasksid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="issueid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-      </KEYS>
-      <INDEXES>
-        <INDEX NAME="tasksid" UNIQUE="false" FIELDS="tasksid"/>
-        <INDEX NAME="issueid" UNIQUE="false" FIELDS="issueid"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="tasks_issues_log" COMMENT="">

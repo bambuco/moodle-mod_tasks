@@ -145,24 +145,28 @@ function tasks_delete_instance($id) {
         return false;
     }
 
-    foreach ($questionids as $questionid) {
-        question_delete_question($questionid);
-    }
-
     $DB->delete_records('tasks_issues_log', array('tasksid' => $tasks->id));
-    $DB->delete_records('tasks_issues_followers', array('tasksid' => $tasks->id));
-    $DB->delete_records('tasks_issues_comments', array('tasksid' => $tasks->id));
     $DB->delete_records('tasks_issues', array('tasksid' => $tasks->id));
-
-    /*$events = $DB->get_records('event', array('modulename' => 'tasks', 'instance' => $tasks->id));
-    foreach ($events as $event) {
-        $event = calendar_event::load($event);
-        $event->delete();
-    }*/
-
     $DB->delete_records('tasks', array('id' => $tasks->id));
 
     return true;
+}
+
+/**
+ * Indicates API features that the tasks supports.
+ *
+ * @uses FEATURE_MOD_INTRO
+ * @param string $feature
+ * @return mixed True if yes (some features may use other values)
+ */
+function tasks_supports($feature) {
+    switch($feature) {
+        case FEATURE_MOD_INTRO:               return true;
+        case FEATURE_BACKUP_MOODLE2:          return true;
+        case FEATURE_SHOW_DESCRIPTION:        return true;
+
+        default: return null;
+    }
 }
 
 /**

@@ -23,8 +23,8 @@
  */
 
 /// This page prints a particular instance of tasks
-require_once("../../config.php");
-require_once("lib.php");
+require_once('../../config.php');
+require_once('lib.php');
 require_once($CFG->libdir . '/completionlib.php');
 
 $id = optional_param('id', 0, PARAM_INT); // Course Module ID.
@@ -34,18 +34,18 @@ if (!empty($id)) {
     if (! $cm = get_coursemodule_from_id('tasks', $id)) {
         print_error('invalidcoursemodule');
     }
-    if (! $course = $DB->get_record("course", array("id"=>$cm->course))) {
+    if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
         print_error('coursemisconf');
     }
-    if (! $tasks = $DB->get_record("tasks", array("id"=>$cm->instance))) {
+    if (! $tasks = $DB->get_record("tasks", array("id" => $cm->instance))) {
         print_error('invalidid', 'tasks');
     }
 
 } else if (!empty($t)) {
-    if (! $tasks = $DB->get_record("tasks", array("id"=>$t))) {
+    if (! $tasks = $DB->get_record("tasks", array("id" => $t))) {
         print_error('invalidid', 'tasks');
     }
-    if (! $course = $DB->get_record("course", array("id"=>$tasks->course))) {
+    if (! $course = $DB->get_record("course", array("id" => $tasks->course))) {
         print_error('invalidcourseid');
     }
     if (!$cm = get_coursemodule_from_instance("tasks", $tasks->id, $course->id)) {

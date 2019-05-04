@@ -57,8 +57,8 @@ class backup_tasks_activity_task extends backup_activity_task {
         $base = preg_quote($CFG->wwwroot,"/");
 
         // Link to the list of tasks
-        $search="/(".$base."\/mod\/tasks\/index.php\?id\=)([0-9]+)/";
-        $content= preg_replace($search, '$@PAGEINDEX*$2@$', $content);
+        $search = "/(" . $base . "\/mod\/tasks\/index.php\?id\=)([0-9]+)/";
+        $content = preg_replace($search, '$@PAGEINDEX*$2@$', $content);
 
         // Link to tasks view by moduleid
         $search="/(".$base."\/mod\/tasks\/view.php\?id\=)([0-9]+)/";

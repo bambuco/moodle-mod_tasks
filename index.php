@@ -27,11 +27,11 @@ require_once($CFG->dirroot . '/mod/tasks/lib.php');
 
 $id = optional_param('id', 0, PARAM_INT);                   // Course id
 
-$url = new moodle_url('/mod/tasks/index.php', array('id'=>$id));
+$url = new moodle_url('/mod/tasks/index.php', array('id' => $id));
 $PAGE->set_url($url);
 
 if ($id) {
-    if (! $course = $DB->get_record('course', array('id' => $id))) {
+    if (!$course = $DB->get_record('course', array('id' => $id))) {
         print_error('invalidcourseid');
     }
 } else {
