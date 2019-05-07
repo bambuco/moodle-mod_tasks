@@ -141,5 +141,3 @@ $string['messageprovider:supervised'] = 'Notification when is assigned like supe
 $string['anonymouslinktext'] = 'Report an issue anonymously';
 $string['tofilter'] = 'Filter';
 $string['issues'] = 'Issues';
-$string[''] = '';
-
