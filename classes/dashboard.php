@@ -267,8 +267,8 @@ class dashboard {
         $panel->head = get_string('expiredissues', 'mod_tasks');
 
         $params = array('tasksid' => $this->tasks->id, 'state' => TASKS_STATE_ASSIGNED,
-                    'assignedto' => $USER->id, 'time' => time());
-        $select = "tasksid = :tasksid AND state = :state AND assignedto = :assignedto AND timefinish > :time";
+                    'assignedto' => $USER->id, 'timefinish' => time());
+        $select = "tasksid = :tasksid AND state = :state AND assignedto = :assignedto AND timefinish < :timefinish";
 
         $issues = $DB->get_records_select('tasks_issues', $select, $params, 'timefinish ASC', '*', 0, TASKS_PANEL_ITEMS);
 
