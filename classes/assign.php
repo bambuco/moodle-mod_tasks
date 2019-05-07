@@ -24,7 +24,7 @@
 
 namespace mod_tasks;
 
-require_once($CFG->dirroot . '/mod/tasks/locallib.php');
+require_once($CFG->libdir . '/formslib.php');
 
 class assign_form extends \moodleform {
     protected $_data;

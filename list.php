@@ -27,17 +27,19 @@ require_once("../../config.php");
 require_once("lib.php");
 require_once($CFG->libdir . '/completionlib.php');
 require_once ('classes/issue.php');
+require_once ('classes/filter.php');
 
 $id = optional_param('id', 0, PARAM_INT); // Course Module ID.
 $t = optional_param('t', 0, PARAM_INT); // Tasks ID.
 
-$delete       = optional_param('delete', 0, PARAM_INT);
-$confirm      = optional_param('confirm', '', PARAM_ALPHANUM); //md5 confirmation hash.
-$sort         = optional_param('sort', 'timereported', PARAM_ALPHA);
-$dir          = optional_param('dir', 'DESC', PARAM_ALPHA);
-$page         = optional_param('spage', 0, PARAM_INT);
-$perpage      = optional_param('perpage', 10, PARAM_INT); // How many per page.
-$operation    = optional_param('op', null, PARAM_TEXT);
+$delete = optional_param('delete', 0, PARAM_INT);
+$confirm = optional_param('confirm', '', PARAM_ALPHANUM); //md5 confirmation hash.
+$sort = optional_param('sort', 'timereported', PARAM_ALPHA);
+$dir = optional_param('dir', 'DESC', PARAM_ALPHA);
+$page = optional_param('spage', 0, PARAM_INT);
+$perpage = optional_param('perpage', 20, PARAM_INT); // How many per page.
+$states = optional_param_array('state', array(), PARAM_INT);
+$search = optional_param('search', '', PARAM_INT);
 
 if (!empty($id)) {
     if (! $cm = get_coursemodule_from_id('tasks', $id)) {
@@ -65,15 +67,45 @@ if (!empty($id)) {
     print_error('invalidid', 'tasks');
 }
 
+// When users reset the form, redirect back to first page without filter params.
+if (optional_param('resetbutton', '', PARAM_RAW) !== '') {
+    redirect('list.php?id=' . $id);
+}
+
 require_course_login($course->id, true, $cm);
 $context = context_module::instance($cm->id);
 
-/// setting the defaut number of entries per page if not set
-$entriesbypage = 20;
+$where = '';
+$paramswhere = array('tasksid' => $tasks->id);
 
-/// If we have received a page, recalculate offset
+if (!empty($search)) {
+    $where = ' AND id = :id';
+    $paramswhere['id'] = $search;
+}
+
+$filterform = new \mod_tasks\filter_form(NULL, array('id' => $id), 'get', '', array('id' => 'filterform'));
+$filterdata = array('search' => $search);
+
+$statesor = array();
+foreach ($states as $key => $active) {
+    if (mod_tasks\util\tools::is_state($key)) {
+        $filterdata['state[' . $key . ']'] = $active;
+        $paramswhere[$key] = $key;
+        $statesor[] = 'state = :' . $key;
+    }
+}
+
+if (count($statesor) > 0) {
+    $where .= ' AND (' . implode(' OR ', $statesor) . ') ';
+}
+
+$filterform->set_data($filterdata);
+
+
+// If we have received a page, recalculate offset.
+$offset = 0;
 if ($page != 0) {
-    $offset = $page * $entriesbypage;
+    $offset = $page * $perpage;
 }
 
 // Initialize $PAGE, compute blocks.
@@ -85,24 +117,28 @@ $currenttab = 'list';
 include 'tabs.php';
 
 if (has_capability('mod/tasks:viewall', $context)) {
-    $issues = $DB->get_records('tasks_issues',
-            array('tasksid' => $tasks->id),
-            $sort . ' ' . $dir, '*', $perpage * $page, $perpage);
+    $sql = "SELECT * FROM {tasks_issues} WHERE tasksid = :tasksid " . $where .
+                " ORDER BY " . $sort . " " . $dir;
 
-    $issuescount = $DB->count_records('tasks_issues', array('tasksid' => $tasks->id));
+    $sqlcount = "SELECT COUNT(1) FROM {tasks_issues} WHERE tasksid = :tasksid " . $where;
+
+    $issues = $DB->get_records_sql($sql, $paramswhere, $offset, $perpage);
+    $issuescount = $DB->count_records_sql($sqlcount, $paramswhere);
 
 } else {
     $sql = "SELECT * FROM {tasks_issues} WHERE tasksid = :tasksid AND " .
-                " (reportedby = :reportedby OR assignedto = :assignedto OR supervisor = :supervisor)" .
+                " (reportedby = :reportedby OR assignedto = :assignedto OR supervisor = :supervisor)" . $where .
                 " ORDER BY " . $sort . " " . $dir;
 
     $sqlcount = "SELECT COUNT(1) FROM {tasks_issues} WHERE tasksid = :tasksid AND " .
-                    " (reportedby = :reportedby OR assignedto = :assignedto OR supervisor = :supervisor)";
+                    " (reportedby = :reportedby OR assignedto = :assignedto OR supervisor = :supervisor)" . $where;
 
-    $params = array('tasksid' => $tasks->id, 'reportedby' => $USER->id, 'assignedto' => $USER->id, 'supervisor' => $USER->id);
+    $paramswhere['reportedby'] = $USER->id;
+    $paramswhere['assignedto'] = $USER->id;
+    $paramswhere['supervisor'] = $USER->id;
 
-    $issues = $DB->get_records_sql($sql, $params, $perpage * $page, $perpage);
-    $issuescount = $DB->count_records_sql($sqlcount, $params);
+    $issues = $DB->get_records_sql($sql, $paramswhere, $offset, $perpage);
+    $issuescount = $DB->count_records_sql($sqlcount, $paramswhere);
 }
 
 
@@ -133,7 +169,15 @@ foreach ($columns as $ckey => $column) {
         $columnicon = "<img class='iconsort' src=\"" . $OUTPUT->pix_url('t/' . $columnicon) . "\" alt=\"\" />";
 
     }
-    $url = new moodle_url('/mod/tasks/list.php', array('id' => $id, 'sort' => $ckey, 'dir' => $columndir, 'perpage' => $perpage, 'page'=>$page));
+    $params = array('id' => $id, 'sort' => $ckey, 'dir' => $columndir, 'perpage' => $perpage, 'page' => $page,
+              'search' => $search);
+
+    foreach ($states as $key => $active) {
+        if (mod_tasks\util\tools::is_state($key)) {
+            $params['state[' . $key . ']'] = $active;
+        }
+    }
+    $url = new moodle_url('/mod/tasks/list.php', $params);
     $table->head[] = html_writer::link($url, $column) . $columnicon;
 }
 
@@ -161,10 +205,20 @@ if($issues) {
     }
 }
 
-$url = new moodle_url('/mod/tasks/list.php', array('id' => $id, 'sort' => $sort, 'dir' => $dir, 'perpage' => $perpage, 'page'=>$page));
+$params = array('id' => $id, 'sort' => $sort, 'dir' => $dir, 'perpage' => $perpage, 'page' => $page,
+            'search' => $search);
+
+foreach ($states as $key => $active) {
+    if (mod_tasks\util\tools::is_state($key)) {
+        $params['state[' . $key . ']'] = $active;
+    }
+}
+
+$url = new moodle_url('/mod/tasks/list.php', $params);
 $pagingbar = new paging_bar($issuescount, $page, $perpage, $url);
 $pagingbar->pagevar = 'spage';
 
+echo $filterform->display();
 echo $OUTPUT->render($pagingbar);
 
 echo html_writer::table($table);

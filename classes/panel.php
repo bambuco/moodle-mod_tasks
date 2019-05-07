@@ -50,7 +50,7 @@ class datapanel {
      * @var array|string Array of items to print like a <ul> list or string with content
      *
      * Example of usage with array:
-     * $t->data = array('Course'=>'Course 1', 'Grade'=>98);
+     * $t->data = array('Course' => 'Course 1', 'Grade'=>98);
      *
      * Example with string
      * $t->data = 'The grade for Course 1 is 98';
@@ -92,13 +92,13 @@ class datapanel {
         }
 
         if (is_array($this->data)) {
-            $html .= \html_writer::start_tag('ul', array('class'=>'tasks-list-group'));
+            $html .= \html_writer::start_tag('ul', array('class' => 'tasks-list-group'));
 
             foreach($this->data as $key=>$content) {
-                $html .= \html_writer::start_tag('li', array('class'=>'tasks-list-group-item'));
+                $html .= \html_writer::start_tag('li', array('class' => 'tasks-list-group-item'));
 
                 if (!is_numeric($key)) {
-                    $html .= \html_writer::tag('label', $key, array('class'=>'label label-primary'));
+                    $html .= \html_writer::tag('label', $key, array('class' => 'label label-primary'));
                 }
 
                 $html .= \html_writer::tag('span', $content);

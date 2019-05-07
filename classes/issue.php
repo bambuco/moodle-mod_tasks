@@ -24,7 +24,7 @@
 
 namespace mod_tasks;
 
-require_once($CFG->dirroot . '/mod/tasks/locallib.php');
+require_once($CFG->dirroot . '/mod/tasks/classes/panel.php');
 
 class issue {
 

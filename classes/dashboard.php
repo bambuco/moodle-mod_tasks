@@ -24,7 +24,7 @@
 
 namespace mod_tasks;
 
-require_once($CFG->dirroot . '/mod/tasks/locallib.php');
+require_once($CFG->dirroot . '/mod/tasks/classes/panel.php');
 
 class dashboard {
 
@@ -199,6 +199,15 @@ class dashboard {
 
                 $panel->data[] = $row;
             }
+
+
+            if (count($issues) == TASKS_PANEL_ITEMS) {
+                $row = \html_writer::tag('a', get_string('showmore', 'form'),
+                        array('href' => new \moodle_url('/mod/tasks/list.php',
+                                            array('t' => $this->tasks->id, 'state[' . TASKS_STATE_ASSIGNED . ']' => 1))));
+
+                $panel->data[] = $row;
+            }
         } else {
             $panel->data = get_string('notissues', 'mod_tasks');
         }
@@ -227,6 +236,14 @@ class dashboard {
             foreach($issues as $issue) {
                 $row = \html_writer::tag('a', $issue->name,
                         array('href' => new \moodle_url('/mod/tasks/detail.php', array('id' => $issue->id))));
+
+                $panel->data[] = $row;
+            }
+
+            if (count($issues) == TASKS_PANEL_ITEMS) {
+                $row = \html_writer::tag('a', get_string('showmore', 'form'),
+                        array('href' => new \moodle_url('/mod/tasks/list.php',
+                                            array('t' => $this->tasks->id, 'state[' . TASKS_STATE_OPEN . ']' => 1))));
 
                 $panel->data[] = $row;
             }

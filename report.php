@@ -25,7 +25,6 @@
 /// This page prints a particular instance of tasks
 require_once('../../config.php');
 require_once('lib.php');
-require_once('locallib.php');
 
 $tasksid = required_param('tasksid', PARAM_INT);
 

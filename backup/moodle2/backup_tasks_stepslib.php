@@ -56,7 +56,9 @@ class backup_tasks_activity_structure_step extends backup_activity_structure_ste
 
         // Build the tree
         $tasks->add_child($issues);
-        $issues->add_child($issuelog);
+        $issues->add_child($issue);
+        $issue->add_child($issueslog);
+        $issueslog->add_child($issuelog);
 
         // Define sources
         $tasks->set_source_table('tasks', array('id' => backup::VAR_ACTIVITYID));

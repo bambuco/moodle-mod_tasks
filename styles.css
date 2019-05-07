@@ -802,6 +802,46 @@ button.tasks-list-group-item-danger.active:focus {
     color: #ddd;
 }
 
+#page-mod-tasks-list #filterform {
+    min-height: 20px;
+    margin-bottom: 20px;
+    background-color: #f5f5f5;
+    border: 1px solid #e3e3e3;
+    padding: 9px;
+    border-radius: 3px;
+    display: inline-block;
+}
+
+#page-mod-tasks-list #filterform div,
+#page-mod-tasks-list #filterform fieldset {
+    display: inline;
+    float: none;
+    clear: none;
+    width: auto;
+    margin: 0;
+}
+
+#page-mod-tasks-list #filterform .fitem {
+    display: inline-block;
+    line-height: 40px;
+    margin-right: .3em;
+    white-space: nowrap;
+}
+
+#page-mod-tasks-list #filterform .fitem label {
+    display: inline;
+    line-height: 20px;
+    padding-right: .3em;
+}
+
+#page-mod-tasks-list #filterform input {
+    margin-bottom: 0;
+}
+
+#page-mod-tasks-list #filterform .ftext input {
+    width: 7em;
+}
+
 @media (min-width:900px) {
     .mod_tasks_datapanel.tasks-panel {
         float: left;

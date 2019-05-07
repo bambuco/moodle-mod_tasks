@@ -34,7 +34,7 @@ define('TASKS_NOTITYPE_DAILY', 20);
 /**#@+
  * Display options
  */
-define('TASKS_PANEL_ITEMS', 10);
+define('TASKS_PANEL_ITEMS', 5);
 /**#@-*/
 
 /**#@+
