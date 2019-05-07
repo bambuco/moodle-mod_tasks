@@ -127,6 +127,17 @@ if (!empty($msgkey)) {
 if (has_capability('mod/tasks:viewall', $context) || $issue->reportedby == $USER->id ||
         $issue->assignedto == $USER->id || $issue->supervisor == $USER->id) {
 
+    require_once 'classes/event/issue_viewed.php';
+    $params = array(
+        'context' => $context,
+        'objectid' => $issue->id,
+    );
+
+    $event = \mod_tasks\event\issue_viewed::create($params);
+    $event->add_record_snapshot('tasks_issues', $issue);
+    $event->add_record_snapshot('tasks', $tasks);
+    $event->trigger();
+
     $current->printdetails();
 
     echo $OUTPUT->container_start('buttons');

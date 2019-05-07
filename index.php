@@ -24,6 +24,7 @@
 require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->dirroot . '/course/lib.php');
 require_once($CFG->dirroot . '/mod/tasks/lib.php');
+require_once($CFG->dirroot . '/mod/tasks/classes/event/course_module_instance_list_viewed.php');
 
 $id = optional_param('id', 0, PARAM_INT);                   // Course id
 
