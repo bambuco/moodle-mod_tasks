@@ -43,14 +43,30 @@ class edit_form extends \moodleform {
         $this->mode = isset($this->_customdata['mode']) ? $this->_customdata['mode'] : TASKS_MODE_ISSUES;
         $this->context = isset($this->_customdata['context']) ? $this->_customdata['context'] : NULL;
 
+        $dateattributes = array('stopyear' => date('Y', time()) + 5, 'startyear' => date('Y', time()), 'optional' => true);
+        $editoroptions = array('maxfiles' => $this->anonymous ? 0 : EDITOR_UNLIMITED_FILES,
+                               'maxbytes' => $CFG->maxbytes,
+                               'trusttext' => false, 'noclean' => true);
+
         if (isset($this->_data->id)) {
-            $this->_data->description = array('text'=>$this->_data->description, 'format'=>$this->_data->descriptionformat);
+            if ($this->anonymous) {
+                $currentdescription = $this->_data->description;
+            } else {
+                $currentdescription = file_prepare_draft_area($this->_customdata['draftid_editor'], $this->context->id,
+                                        'mod_tasks', 'description',
+                                        $this->_data->id, $editoroptions, $this->_data->description);
+            }
+
+            $this->_data->description = array('text' => $currentdescription,
+                                  'format' => $this->_data->descriptionformat);
+
+            if (isset($this->_customdata['draftid_editor'])) {
+                $this->_data->description['itemid'] = $this->_customdata['draftid_editor'];
+            }
+
         } else {
             $this->_data->state = TASKS_STATE_OPEN;
         }
-
-        $dateattributes = array('stopyear'=>date('Y', time()) + 5, 'startyear'=>date('Y', time()), 'optional'=>true);
-        $editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES, 'maxbytes'=>$CFG->maxbytes, 'trusttext'=>false, 'noclean'=>true);
 
         if ($this->anonymous) {
             $mform->addElement('text', 'namereportedby', get_string('namereportedby', 'mod_tasks'), 'maxlength="255" size="30"');
@@ -65,6 +81,8 @@ class edit_form extends \moodleform {
         $mform->addElement('text', 'name', get_string('issuetitle', 'mod_tasks'), 'maxlength="255" size="30"');
         $mform->addRule('name', get_string('missingvalue', 'mod_tasks'), 'required', null, 'client');
         $mform->setType('name', PARAM_TEXT);
+
+
 
         $mform->addElement('editor', 'description', get_string('description'), null, $editoroptions);
 

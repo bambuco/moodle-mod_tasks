@@ -53,6 +53,11 @@ class issue {
      */
     public $defaultuserformatdate;
 
+    /**
+     * @var object The module context
+     */
+    public $context = null;
+
 
     public function __construct($data, $tasks = null, $cm = null, $course = null) {
         global $DB;
@@ -77,6 +82,8 @@ class issue {
             $this->cm = $cm;
         }
 
+        $this->context = \context_module::instance($cm->id);
+
         $this->defaultuserformatdate = get_string('strftimedatetimeshort');
     }
 
@@ -96,8 +103,11 @@ class issue {
 
         // Name and description
         $html .= \html_writer::tag('h2', $this->data->name);
+
+        $description = file_rewrite_pluginfile_urls($this->data->description, 'pluginfile.php',
+                            $this->context->id, 'mod_tasks', 'description', $this->data->id);
         $html .= \html_writer::tag('div',
-                    format_text($this->data->description, $this->data->descriptionformat, null, $this->course->id),
+                    format_text($description, $this->data->descriptionformat, null, $this->course->id),
                     array('class' => 'details'));
 
         $html .= \html_writer::start_tag('ul');
@@ -335,11 +345,15 @@ class issue {
             $data[] = get_string($key, 'mod_tasks');
 
             if ($key == 'description') {
+                $field = file_rewrite_pluginfile_urls($field, 'pluginfile.php',
+                            $this->context->id, 'mod_tasks', 'description', $this->data->id);
                 $data[] = format_text($field,
                     isset($summary->old->descriptionformat) ?
                         $summary->old->descriptionformat : $this->data->descriptionformat);
 
-                $data[] = format_text($summary->change->$key,
+                $new = file_rewrite_pluginfile_urls($summary->change->$key, 'pluginfile.php',
+                            $this->context->id, 'mod_tasks', 'description', $this->data->id);
+                $data[] = format_text($new,
                     isset($summary->change->descriptionformat) ?
                         $summary->change->descriptionformat : $this->data->descriptionformat);
 

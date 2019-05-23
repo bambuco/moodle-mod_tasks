@@ -122,7 +122,7 @@ class dashboard {
 
         $issues = $DB->get_records('tasks_issues',
                     array('tasksid' => $this->tasks->id),
-                    'timestart DESC', '*', 0, TASKS_PANEL_ITEMS);
+                    'timereported DESC', '*', 0, TASKS_PANEL_ITEMS);
 
         if ($issues) {
             $panel->data = array();
@@ -150,15 +150,13 @@ class dashboard {
         $panel = new util\datapanel();
         $panel->head = get_string('latestownissues', 'mod_tasks');
 
-        if ($this->tasks->anonymous == TASKS_NONANONYMOUS) {
-            $uid = $USER->id;
-        } else {
-            $uid = 0;
+        if (!$USER || !$USER->id) {
+            return $panel;
         }
 
         $issues = $DB->get_records('tasks_issues',
-                    array('tasksid' => $this->tasks->id, 'reportedby' => $uid),
-                    'timestart DESC', '*', 0, TASKS_PANEL_ITEMS);
+                    array('tasksid' => $this->tasks->id, 'reportedby' => $USER->id),
+                    'timereported DESC', '*', 0, TASKS_PANEL_ITEMS);
 
         if ($issues) {
             $panel->data = array();

@@ -42,7 +42,7 @@ if (!empty($tasksid)) {
     print_error('invalidid', 'tasks');
 }
 
-if ($tasks->anonymous != TASKS_ANONYMOUS) {
+if ($tasks->anonymous != TASKS_ANONYMOUS || $tasks->mode != TASKS_MODE_ISSUES) {
     print_error('onlyanonymousreports', 'tasks');
 }
 
@@ -65,7 +65,7 @@ require_once ('classes/edit.php');
 // First create the form.
 $data = new stdClass();
 $data->tasksid = $tasksid;
-$editform = new \mod_tasks\edit_form(NULL, array('data' => $data, 'anonymous' => true));
+$editform = new \mod_tasks\edit_form(NULL, array('data' => $data, 'anonymous' => true, 'mode' => TASKS_MODE_ISSUES));
 
 if ($data = $editform->get_data()) {
 

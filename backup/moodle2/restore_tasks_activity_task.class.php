@@ -84,7 +84,7 @@ class restore_tasks_activity_task extends restore_activity_task {
 
         $rules[] = new restore_log_rule('tasks', 'add', 'view.php?id={course_module}', '{tasks}');
         $rules[] = new restore_log_rule('tasks', 'update', 'view.php?id={course_module}', '{tasks}');
-        //$rules[] = new restore_log_rule('tasks', 'view', 'view.php?id={course_module}', '{tasks}');
+        $rules[] = new restore_log_rule('tasks', 'view', 'view.php?id={course_module}', '{tasks}');
 
         return $rules;
     }
@@ -102,7 +102,7 @@ class restore_tasks_activity_task extends restore_activity_task {
     static public function define_restore_log_rules_for_course() {
         $rules = array();
 
-        //$rules[] = new restore_log_rule('tasks', 'view all', 'index.php?id={course}', null);
+        $rules[] = new restore_log_rule('tasks', 'view all', 'index.php?id={course}', null);
 
         return $rules;
     }

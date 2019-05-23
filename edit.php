@@ -77,10 +77,16 @@ $PAGE->set_url('/mod/tasks/edit.php', $params);
 
 require_once ('classes/edit.php');
 
+//$draftitemid = file_get_submitted_draft_itemid('attachments_filemanager');
+//file_prepare_draft_area($draftitemid, $context->id, 'mod_tasks', 'issue', $id);
+
 // First create the form.
 $data = clone $issue;
+$draftid_editor = file_get_submitted_draft_itemid('description');
 $editform = new \mod_tasks\edit_form(NULL,
-                    array('data' => $data, 'anonymous' => false, 'mode' => $tasks->mode, 'context' => $context));
+                    array('data' => $data, 'anonymous' => false, 'mode' => $tasks->mode,
+                          'context' => $context, 'draftid_editor' => $draftid_editor));
+
 
 if ($editform->is_cancelled()) {
     if ($id) {
@@ -113,19 +119,13 @@ else if ($data = $editform->get_data()) {
                 continue;
             }
 
-            if ($key == 'description') {
-                if ($data->description['text'] != $field) {
-                    $log->old->$key = $field;
-                    $log->change->$key = is_array($data->description) ? $data->description['text'] : '';
-                    $anychange = true;
-                }
-            } else if ($key == 'descriptionformat') {
+            if ($key == 'descriptionformat') {
                 if ($data->description['format'] != $field) {
                     $log->old->$key = $field;
                     $log->change->$key = is_array($data->description) ? $data->description['format'] : '';
                     $anychange = true;
                 }
-            } else if ($data->$key != $field) {
+            } else if ($data->$key != $field && $key != 'description') {
                 $log->old->$key = $field;
                 $log->change->$key = $data->$key;
                 $anychange = true;
@@ -159,8 +159,24 @@ else if ($data = $editform->get_data()) {
     }
 
     if (is_array($data->description)) {
-        $issue->description = $data->description['text'];
         $issue->descriptionformat = $data->description['format'];
+
+        if ($id) {
+            $description = file_save_draft_area_files($draftid_editor, $context->id, 'mod_tasks', 'description',
+                                            $id, array('subdirs'=>true), $data->description['text']);
+
+            if ($description != $issue->description) {
+                $log->old->description = $issue->description;
+                $log->change->description = $description;
+                $anychange = true;
+            }
+
+            $issue->description = $description;
+
+        } else {
+            $issue->description = $data->description['text'];
+        }
+
     }
 
     if (!empty($data->id)) {
@@ -191,6 +207,10 @@ else if ($data = $editform->get_data()) {
         $id = $DB->insert_record('tasks_issues', $issue, true);
         $issue->id = $id;
 
+        $issue->description = file_save_draft_area_files($draftid_editor, $context->id, 'mod_tasks', 'description',
+                            $id, array('subdirs'=>true), $issue->description);
+        $DB->set_field('tasks_issues', 'description', $issue->description, array('id' => $id));
+
         require_once 'classes/event/issue_created.php';
         $event = \mod_tasks\event\issue_created::create(array(
             'objectid' => $id,
@@ -203,6 +223,8 @@ else if ($data = $editform->get_data()) {
         $issueobj->sendmessage(TASKS_MSG_CREATED);
 
     }
+
+    //file_save_draft_area_files($draftitemid, $context->id, 'mod_tasks', 'issue', $id);
 
     if ($assigned) {
         $issueobj->sendmessage(TASKS_MSG_ASSIGNED);

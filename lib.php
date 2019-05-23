@@ -190,3 +190,63 @@ function tasks_process_options($tasks) {
     global $CFG;
 
 }
+
+/**
+ * Serves the attachments. Implements needed access control ;-)
+ *
+ * @package  mod_tasks
+ * @category files
+ * @param stdClass $course course object
+ * @param stdClass $cm course module object
+ * @param stdClass $context context object
+ * @param string $filearea file area
+ * @param array $args extra arguments
+ * @param bool $forcedownload whether or not force download
+ * @param array $options additional options affecting the file serving
+ * @return bool false if file not found, does not return if found - justsend the file
+ */
+function tasks_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array()) {
+    global $CFG, $DB;
+
+    if ($context->contextlevel != CONTEXT_MODULE) {
+        return false;
+    }
+
+    require_course_login($course, true, $cm);
+
+    $areas = array(
+        'description' => get_string('description', 'mod_tasks'),
+    );
+
+    // filearea must contain a real area.
+    if (!isset($areas[$filearea])) {
+        return false;
+    }
+
+    $issueid = (int)array_shift($args);
+
+    if (!$issue = $DB->get_record('tasks_issues', array('id' => $issueid))) {
+        return false;
+    }
+
+    if (!$tasks = $DB->get_record('tasks', array('id' => $issue->tasksid))) {
+        return false;
+    }
+
+    $fs = get_file_storage();
+    $relativepath = implode('/', $args);
+    $fullpath = "/{$context->id}/mod_tasks/$filearea/$issueid/$relativepath";
+
+    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
+        return false;
+    }
+
+    // Make sure we're allowed to see it...
+    if (!has_capability('mod/tasks:viewall', $context) && $issue->reportedby != $USER->id &&
+        $issue->assignedto != $USER->id && $issue->supervisor != $USER->id) {
+        return false;
+    }
+
+    // Finally send the file.
+    send_stored_file($file, 0, 0, true, $options); // download MUST be forced - security!
+}
