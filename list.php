@@ -166,7 +166,7 @@ foreach ($columns as $ckey => $column) {
     else {
         $columndir = $dir == "ASC" ? "DESC":"ASC";
         $columnicon = ($dir == "ASC") ? "sort_asc" : "sort_desc";
-        $columnicon = "<img class='iconsort' src=\"" . $OUTPUT->pix_url('t/' . $columnicon) . "\" alt=\"\" />";
+        $columnicon = $OUTPUT->pix_icon('t/' . $columnicon, new lang_string('sort'));
 
     }
     $params = array('id' => $id, 'sort' => $ckey, 'dir' => $columndir, 'perpage' => $perpage, 'page' => $page,
