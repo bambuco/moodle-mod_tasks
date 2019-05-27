@@ -74,7 +74,7 @@ class dashboard {
 
         $context = \context_module::instance($this->cm->id);
 
-        $html .= $OUTPUT->box_start('span12 panels');
+        $html .= $OUTPUT->box_start('span12 col-12 panels');
 
         if (has_capability('mod/tasks:viewall', $context)) {
             $html .= $this->get_latestissues_panel()->get_content();
@@ -96,7 +96,7 @@ class dashboard {
 
         if ($this->tasks->anonymous == TASKS_ANONYMOUS) {
 
-            $html .= $OUTPUT->box_start('span12');
+            $html .= $OUTPUT->box_start('span12 col-12');
             $html .= \html_writer::tag('a', get_string('anonymouslinktext', 'mod_tasks'),
                         array('href' => new \moodle_url('/mod/tasks/report.php', array('tasksid' => $this->tasks->id))));
             $html .= $OUTPUT->box_end();
