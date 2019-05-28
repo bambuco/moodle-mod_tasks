@@ -540,7 +540,7 @@ class issue {
         }
 
         foreach ($to as $user) {
-            $eventdata = new \stdClass();
+            $eventdata = new \core\message\message();
             $eventdata->modulename       = 'tasks';
             $eventdata->userfrom         = $USER;
             $eventdata->userto           = $user;

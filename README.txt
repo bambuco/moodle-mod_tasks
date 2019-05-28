@@ -3,7 +3,7 @@ MOD Tasks
 
 A Moodle mod plugin. Used to report issues and manage tasks.
 
-Package tested in: moodle 3.0+
+Package tested in: moodle 3.0+ to 3.5+
 
 QUICK INSTALL
 ==============
