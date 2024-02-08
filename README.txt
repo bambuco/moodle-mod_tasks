@@ -3,7 +3,7 @@ MOD Tasks
 
 A Moodle mod plugin. Used to report issues and manage tasks.
 
-Package tested in: moodle 3.0+ to 3.5+
+Package tested in: moodle 4.1+ to 4.1+
 
 QUICK INSTALL
 ==============
@@ -17,8 +17,6 @@ GIT: https://github.com/bambuco/moodle-mod_tasks
 POWERED BY
 ==============
 BambuCo - https://bambuco.co/
-Conhydra - https://www.conhydra.com/
-Engagement - http://engagement.com.co/
 
 
 IN VERSION

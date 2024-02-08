@@ -22,8 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['modulename'] = 'Tareas';
-$string['modulename_help'] = 'Reportar/gestionar reportes y tareas.';
+$string['modulename'] = 'Soporte';
+$string['modulename_help'] = 'Reportar/gestionar reportes y tareas pendientes.';
 $string['modulename_link'] = 'mod/tasks/view';
 $string['modulenameplural'] = 'Lista de tareas';
 $string['tasks:addinstance'] = 'Adicionar una nueva lista de tareas';
@@ -31,9 +31,9 @@ $string['tasks:viewall'] = 'Ver la lista de tareas';
 $string['tasks:report'] = 'Hacer un reporte';
 $string['tasks:manage'] = 'Gestionar las tareas propias';
 $string['tasks:manageall'] = 'Gestionar todas las tareas';
-$string['pluginadministration'] = 'Administración del módulo Tareas';
-$string['pluginname'] = 'Tareas';
-$string['crontasks'] = 'Cron de las tareas';
+$string['pluginadministration'] = 'Administración del módulo Soporte';
+$string['pluginname'] = 'Soporte';
+$string['crontasks'] = 'Cron de las tareas de soporte';
 $string['controlhdr'] = 'Control';
 $string['notificationstype'] = 'Tipo de notificación de los recordatorios';
 $string['notify_none'] = 'Nunca';
